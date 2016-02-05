@@ -4,7 +4,9 @@ import {
 	, splitFile
 	, splitCode
 	, splitContent
-	, getCode
+	, cleanRawVariable
+	, updateGlobalVariables
+	, convertRawVariableToObject
 	, getRawVariables
 	, getRawVariableKey
 	, getRawVariableValue
@@ -36,9 +38,9 @@ describe('index', ()=>{
 			})
 		);
 	});
-	it('getCode', ()=>{
-		const code = getCode('/*eTr ex1.js eTr*/');
-		expect(code).to.equal(Map({filename: 'ex1.js'}));
+	it('convertRawVariableToObject', ()=>{
+		const object = convertRawVariableToObject('<!example=variable!>');
+		expect(object).to.equal(Map({example: 'variable'}));
 	});
 	it('getRawVariables', ()=>{
 		const rawVariables = getRawVariables('/*eTr <!example=variable!> ex1.js eTr*/');
@@ -51,5 +53,9 @@ describe('index', ()=>{
 	it('getRawVariableValue', ()=>{
 		const rawVariableValue = getRawVariableValue('example=variable');
 		expect(rawVariableValue).to.equal('variable');
+	});
+	it('updateGlobalVariables', ()=>{
+		const updatedGlobalVariables = updateGlobalVariables(List(['<!example=variable!>']), Map());
+		expect(updatedGlobalVariables).to.equal(Map({example: 'variable'}));
 	});
 });
