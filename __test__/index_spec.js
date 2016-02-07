@@ -10,6 +10,10 @@ import {
 	, getRawVariables
 	, getRawVariableKey
 	, getRawVariableValue
+	, updateFilename
+	, getFilename
+	, transformRegExp
+	, transformContent
 } from './../lib/index';
 import {fromJS, List, Map} from 'immutable';
 import {promisify} from 'bluebird';
@@ -55,7 +59,23 @@ describe('index', ()=>{
 		expect(rawVariableValue).to.equal('variable');
 	});
 	it('updateGlobalVariables', ()=>{
-		const updatedGlobalVariables = updateGlobalVariables(List(['<!example=variable!>']), Map());
+		const updatedGlobalVariables = updateGlobalVariables('/*eTr <!example=variable!> ex1.js eTr*/', Map());
 		expect(updatedGlobalVariables).to.equal(Map({example: 'variable'}));
+	});
+	it('updateFilename', ()=>{
+		const updatedFilename = updateFilename('/*eTr <!example=variable!> ex1.js eTr*/', Map());
+		expect(updatedFilename).to.equal(Map({eTrfilenameETr: 'ex1.js'}));
+	});
+	it('getFilename', ()=>{
+		const filename = getFilename('/*eTr <!example=variable!> ex1.js eTr*/');
+		expect(filename).to.equal('ex1.js');
+	});
+	it('transformRegExp', ()=>{
+		const transformPattern = transformRegExp(Map({example: 'variable', example_2: 'variable_2'}));
+		expect(transformPattern).to.eql(/\<\!example\!\>|\<\!example_2\!\>/g);
+	});
+	it('transformContent', ()=>{
+		const transformedContent = transformContent('<!example!> <!example_2!> ex1.js', Map({example: 'variable', example_2: 'variable_2'}));
+		expect(transformedContent).to.equal('variable variable_2 ex1.js');
 	});
 });
