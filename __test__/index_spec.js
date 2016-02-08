@@ -1,7 +1,6 @@
 import {expect} from 'chai';
 import {
 	run
-	, splitFile
 	, splitCode
 	, splitContent
 	, cleanRawVariable
@@ -14,17 +13,27 @@ import {
 	, getFilename
 	, transformRegExp
 	, transformContent
+	, initialPluginPromise
+	, pluginStream
+	, generatePluginFunctions
 } from './../lib/index';
 import {fromJS, List, Map} from 'immutable';
 import {promisify} from 'bluebird';
 import fs from 'fs';
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
+import rimraf from 'rimraf';
 const simpleJsonFile = "/*eTr ex1.js eTr*/a/*eTr ex2.js eTr*/b/*eTr ex3.js eTr*/c"
 const jsonFile = "/*eTr <!base=example!> <!pasta=spagetti!> example.js eTr*/\n\nfunction(){\n\treturn '$eTr{pasta}';\n}\n\n/*eTr base=example pasta=noodles example2.js eTr*/\n\nfunction(){\n\treturn '$eTr{pasta}';\n}\n\n/*eTr base=example pasta=kimchi example3.js eTr*/\n\nfunction(){\n\treturn '$eTr{pasta}';\n}\n;"
 
 describe('index', ()=>{
-	
+	before(()=>{
+		rimraf.sync('example');
+	});
+
+	after(()=>{
+		rimraf.sync('example');
+	});
 	it('splitContent', ()=>{
 		const contents = splitContent(simpleJsonFile);
 		expect(contents).to.equal(List(['a', 'b', 'c']));
@@ -32,15 +41,6 @@ describe('index', ()=>{
 	it('splitCode', ()=>{
 		const contents = splitCode(simpleJsonFile);
 		expect(contents).to.equal(List(['/*eTr ex1.js eTr*/', '/*eTr ex2.js eTr*/', '/*eTr ex3.js eTr*/']));
-	});
-	it('splitFile', ()=>{
-		const contentAndCode = splitFile(simpleJsonFile);
-		expect(contentAndCode).to.equal(
-			fromJS({
-				codes: ['/*eTr ex1.js eTr*/', '/*eTr ex2.js eTr*/', '/*eTr ex3.js eTr*/'],
-				contents: ['a', 'b', 'c']
-			})
-		);
 	});
 	it('convertRawVariableToObject', ()=>{
 		const object = convertRawVariableToObject('<!example=variable!>');
@@ -59,12 +59,26 @@ describe('index', ()=>{
 		expect(rawVariableValue).to.equal('variable');
 	});
 	it('updateGlobalVariables', ()=>{
-		const updatedGlobalVariables = updateGlobalVariables('/*eTr <!example=variable!> ex1.js eTr*/', Map());
-		expect(updatedGlobalVariables).to.equal(Map({example: 'variable'}));
+		const code = '/*eTr <!example=variable!> ex1.js eTr*/';
+		const globalVariables = Map();
+		const updatedGlobalVariablesState = updateGlobalVariables(Map({
+			globalVariables,
+			code
+			})
+		);
+		expect(updatedGlobalVariablesState.get('globalVariables')).to.equal(Map({example: 'variable'}));
 	});
 	it('updateFilename', ()=>{
-		const updatedFilename = updateFilename('/*eTr <!example=variable!> ex1.js eTr*/', Map());
-		expect(updatedFilename).to.equal(Map({eTrfilenameETr: 'ex1.js'}));
+		const code = '/*eTr <!example=variable!> ex1.js eTr*/';
+		const globalVariables = Map();
+
+		const updatedFilenameState = updateFilename(
+			Map({
+				code,
+				globalVariables
+			})
+		);
+		expect(updatedFilenameState.get('filename')).to.equal('ex1.js');
 	});
 	it('getFilename', ()=>{
 		const filename = getFilename('/*eTr <!example=variable!> ex1.js eTr*/');
@@ -75,7 +89,41 @@ describe('index', ()=>{
 		expect(transformPattern).to.eql(/\<\!example\!\>|\<\!example_2\!\>/g);
 	});
 	it('transformContent', ()=>{
-		const transformedContent = transformContent('<!example!> <!example_2!> ex1.js', Map({example: 'variable', example_2: 'variable_2'}));
-		expect(transformedContent).to.equal('variable variable_2 ex1.js');
+		const content = '<!example!> <!example_2!> ex1.js';
+		const globalVariables = Map({
+			example: 'variable'
+			, example_2: 'variable_2'
+		});
+		const transformedContentState = transformContent(
+			Map({
+				content
+				, globalVariables
+			})
+		);
+		expect(transformedContentState.get('content')).to.equal('variable variable_2 ex1.js');
+	});
+	it('initialPluginPromise', ()=>{
+		const state = Map();
+		expect(initialPluginPromise(state)).to.eventually.equal(Map());
+	});
+	
+	it('pluginStream', (done)=>{
+		const state = Map({
+				filename: 'example.js'
+				, content: 'hello'
+				, globalVariables: Map({
+					base: 'example'
+				})
+			})
+		const plugins = List(['./../lib/pagitter-write']);
+		const generatePluginFunction = generatePluginFunctions(plugins)		
+		generatePluginFunction(state)
+		.then(()=>{
+			return readFile('example/example.js', 'utf8')
+		})
+		.then((content)=>{
+				expect(content).to.equal('hello');
+				return done();
+		});
 	});
 });

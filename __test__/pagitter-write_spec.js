@@ -3,13 +3,13 @@ import {promisify} from 'bluebird';
 import {Map} from 'immutable';
 import fs from 'fs';
 import rimraf from 'rimraf'
-import {
-	generatePromise
-	, location
+import generatePromise
+	,{
+	  location
 	, basename
 	, generateFolders
 } from './../lib/pagitter-write';
-
+const fsExists = promisify(fs.exists);
 const readFile = promisify(fs.readFile);
 
 before(()=>{
@@ -22,21 +22,39 @@ after(()=>{
 
 describe('pagitter-write', ()=>{
 	it('generatePromise', (done)=>{
-		const promise = generatePromise(Map({base: 'example', eTrFilenameETr: 'example.js', eTrcontentETr: 'hello'}));
-		return promise().then(()=>{
+		const state = Map({
+				filename: 'example.js'
+				, content: 'hello'
+				, globalVariables: Map({
+					base: 'example'
+				})
+			})
+		const promise = generatePromise(state);
+		return promise.then((newState)=>{
 			readFile('example/example.js', 'utf8').then((content)=>{
 				expect(content).to.equal('hello');
+				expect(newState).to.equal(state);
 				done();
 			});
 		});
 	});
 	it('location without base', ()=>{
-		const fullLocation = location(Map({eTrFilenameETr: 'example.js'}));
+		const fullLocation = location(
+			Map({
+				filename: 'example.js'
+				, globalVariables: Map()
+			})
+		);
 		expect(fullLocation).to.eventually.equal(process.cwd() + '/example.js');
 	});
-
 	it('location with base', ()=>{
-		const fullLocation = location(Map({base: 'example', eTrFilenameETr: 'example.js'}));
+		const state = Map({
+				filename: 'example.js'
+				, globalVariables: Map({
+					base: 'example'
+				})
+			})
+		const fullLocation = location(state);
 		expect(fullLocation).to.eventually.equal(process.cwd() + '/example/example.js');
 	});
 	it('basename', ()=>{
@@ -45,10 +63,12 @@ describe('pagitter-write', ()=>{
 	});
 	it('generateFolders', (done)=>{
 		const filename = process.cwd() + '/example/example.js'
-		generateFolders(filename).then(()=>{
-			expect(process.cwd() + '/example').to.be.a.directory();
-			done();
-		})
-		
+		generateFolders(filename)
+		.then(()=>{
+			return fs.exists(process.cwd() + '/example', (result)=>{
+				expect(result).to.be.true;
+				done();
+			});
+		});	
 	});
 });
