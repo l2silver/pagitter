@@ -126,4 +126,15 @@ describe('index', ()=>{
 				return done();
 		});
 	});
+	it('run', (done)=>{
+		run('./__test__/pagitterTest1.js')
+		.then(()=>{
+			return readFile('example/example3.js', 'utf8')
+		})
+		.then((content)=>{
+			expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+			return done();
+		});
+	});
+
 });

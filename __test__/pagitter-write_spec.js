@@ -33,7 +33,7 @@ describe('pagitter-write', ()=>{
 		return promise.then((newState)=>{
 			readFile('example/example.js', 'utf8').then((content)=>{
 				expect(content).to.equal('hello');
-				expect(newState).to.equal(state);
+				expect(newState).to.equal(state.set('filename', false));
 				done();
 			});
 		});
