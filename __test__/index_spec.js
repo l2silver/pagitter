@@ -58,7 +58,7 @@ describe('index', ()=>{
 		const rawVariableValue = getRawVariableValue('example=variable');
 		expect(rawVariableValue).to.equal('variable');
 	});
-	it('updateGlobalVariables', ()=>{
+	it('updateGlobalVariables', (done)=>{
 		const code = '/*eTr <!example=variable!> ex1.js eTr*/';
 		const globalVariables = Map();
 		const updatedGlobalVariablesState = updateGlobalVariables(Map({
@@ -66,9 +66,13 @@ describe('index', ()=>{
 			code
 			})
 		);
-		expect(updatedGlobalVariablesState.get('globalVariables')).to.equal(Map({example: 'variable'}));
+		updatedGlobalVariablesState.then((state)=>{
+			expect(state.get('globalVariables')).to.equal(Map({example: 'variable'}));
+			return done();
+		});
+		
 	});
-	it('updateFilename', ()=>{
+	it('updateFilename', (done)=>{
 		const code = '/*eTr <!example=variable!> ex1.js eTr*/';
 		const globalVariables = Map();
 
@@ -78,7 +82,11 @@ describe('index', ()=>{
 				globalVariables
 			})
 		);
-		expect(updatedFilenameState.get('filename')).to.equal('ex1.js');
+		updatedFilenameState.then((state)=>{
+			expect(state.get('filename')).to.equal('ex1.js');	
+			return done()
+		});
+		
 	});
 	it('getFilename', ()=>{
 		const filename = getFilename('/*eTr <!example=variable!> ex1.js eTr*/');
@@ -88,7 +96,7 @@ describe('index', ()=>{
 		const transformPattern = transformRegExp(Map({example: 'variable', example_2: 'variable_2'}));
 		expect(transformPattern).to.eql(/\<\!example\!\>|\<\!example_2\!\>/g);
 	});
-	it('transformContent', ()=>{
+	it('transformContent', (done)=>{
 		const content = '<!example!> <!example_2!> ex1.js';
 		const globalVariables = Map({
 			example: 'variable'
@@ -100,7 +108,11 @@ describe('index', ()=>{
 				, globalVariables
 			})
 		);
-		expect(transformedContentState.get('content')).to.equal('variable variable_2 ex1.js');
+		transformedContentState.then((state)=>{
+			expect(state.get('content')).to.equal('variable variable_2 ex1.js');
+			return done();
+		});
+		
 	});
 	it('initialPluginPromise', ()=>{
 		const state = Map();
@@ -130,6 +142,16 @@ describe('index', ()=>{
 		run('./__test__/pagitterTest1.js')
 		.then(()=>{
 			return readFile('example/example3.js', 'utf8')
+		})
+		.then((content)=>{
+			expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+			return done();
+		});
+	});
+	it('run', (done)=>{
+		run('./__test__/pagitterTest2.js')
+		.then(()=>{
+			return readFile('example/example4.js', 'utf8')
 		})
 		.then((content)=>{
 			expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');

@@ -1,5 +1,5 @@
 {
 	"plugins": [
-		"./../lib/pagitter-write"
+		"./../dist/pagitter-write"
 	]
 }
