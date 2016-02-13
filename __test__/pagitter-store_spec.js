@@ -14,14 +14,12 @@ import generatePromise
 		, setEndStoreNames
 		, reverseTransformContent
 		, reverseGlobalVariables
+		, reverse
 } from './../lib/pagitter-store';
 const fsExists = promisify(fs.exists);
 const readFile = promisify(fs.readFile);
 
-
-
 describe('pagitter-store', ()=>{
-
 
 	it('reverseGlobalVariables', ()=>{
 		const state = Map({

@@ -31,6 +31,7 @@ readFile('.pagitter', 'utf8')
 	program
 	  .version(JSON.parse(fs.readFileSync(__dirname + '/../package.json', 'utf8')).version)
 	  .option('-w, --watch', 'Watch pagitter.js for changes')
+	  .option('-r, --reverse', 'Run get store command [value]', 'The name of the store')
 	  .parse(process.argv);
 
 	if(program.watch){
@@ -65,7 +66,7 @@ readFile('.pagitter', 'utf8')
 				}
 			}
 		})
-		pagitter.run(process.cwd()+'/pagitter.js', reversePluginList)
+		pagitter.run(process.cwd()+'/.pagitterStore/'+program.reverse+'.js', reversePluginList)
 	}else{
 		pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList)
 	}
