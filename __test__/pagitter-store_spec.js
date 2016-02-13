@@ -21,6 +21,41 @@ const readFile = promisify(fs.readFile);
 
 describe('pagitter-store', ()=>{
 
+	describe('reverse', ()=>{
+		it('on Last Writes New File', (done)=>{
+			const state = Map({
+				globalVariables: Map({
+					flavour: 'delicious'
+				}),
+				reverseContent: '/*eTr <!base=example!> example.js eTr*/\n\nfunction(){\n\treturn "delicious"\n}'
+			});
+			reverse(state).then(()=>{
+				return readFile('.pagitterStores/signup.js','utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('/*eTr <!base=example!> example.js eTr*/\n\nfunction(){\n\treturn "delicious"\n}');
+				done()
+			});
+		})
+	});
+	it('reverse', ()=>{
+		const state = Map({
+			globalVariables: Map({
+				flavour: 'delicious'
+			})
+		})
+		expect(reverseGlobalVariables(state)).to.equal(
+			Map({
+				globalVariables: Map({
+					flavour: 'delicious'
+				}),
+				reverseGlobalVariables: Map({
+					delicious: 'flavour'
+				})
+			})
+		);
+	});	
+
 	it('reverseGlobalVariables', ()=>{
 		const state = Map({
 			globalVariables: Map({

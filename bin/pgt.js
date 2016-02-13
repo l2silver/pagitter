@@ -70,8 +70,6 @@ readFile('.pagitter', 'utf8')
 	}else{
 		pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList)
 	}
-
-
 	     
 	/**
 	 * Hide the cursor.
