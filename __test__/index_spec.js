@@ -127,8 +127,8 @@ describe('index', ()=>{
 					base: 'example'
 				})
 			})
-		const plugins = List(['./../lib/pagitter-write']);
-		const generatePluginFunction = generatePluginFunctions(plugins)		
+		const plugins = List([require("./../dist/pagitter-write").default]);
+		const generatePluginFunction = generatePluginFunctions(plugins)
 		generatePluginFunction(state)
 		.then(()=>{
 			return readFile('example/example.js', 'utf8')
@@ -138,25 +138,32 @@ describe('index', ()=>{
 				return done();
 		});
 	});
-	it('run', (done)=>{
-		run('./__test__/pagitterTest1.js')
-		.then(()=>{
-			return readFile('example/example3.js', 'utf8')
-		})
-		.then((content)=>{
-			expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
-			return done();
+
+	describe('run', ()=>{
+		const pluginList = [require("./../dist/pagitter-write").default];
+		it('creates file with base variable', (done)=>{
+			run('./__test__/pagitterTest1.js', pluginList)
+			.then(()=>{
+				return readFile('example/example3.js', 'utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+				return done();
+			});
 		});
-	});
-	it('run', (done)=>{
-		run('./__test__/pagitterTest2.js')
-		.then(()=>{
-			return readFile('example/example4.js', 'utf8')
-		})
-		.then((content)=>{
-			expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
-			return done();
+		it('creates multiple files', (done)=>{
+			run('./__test__/pagitterTest2.js', pluginList)
+			.then(()=>{
+				return readFile('example/example4.js', 'utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+				return done();
+			});
 		});
+
 	});
+
+	
 
 });

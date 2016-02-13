@@ -12,6 +12,8 @@ import generatePromise
 		, addContent
 		, checkEndStores
 		, setEndStoreNames
+		, reverseTransformContent
+		, reverseGlobalVariables
 } from './../lib/pagitter-store';
 const fsExists = promisify(fs.exists);
 const readFile = promisify(fs.readFile);
@@ -19,6 +21,46 @@ const readFile = promisify(fs.readFile);
 
 
 describe('pagitter-store', ()=>{
+
+
+	it('reverseGlobalVariables', ()=>{
+		const state = Map({
+			globalVariables: Map({
+				flavour: 'delicious'
+			})
+		})
+		expect(reverseGlobalVariables(state)).to.equal(
+			Map({
+				globalVariables: Map({
+					flavour: 'delicious'
+				}),
+				reverseGlobalVariables: Map({
+					delicious: 'flavour'
+				})
+			})
+		);
+	});
+	it('reverseTransform', ()=>{
+		const content = 'It is delicious';
+		const state = Map({
+			globalVariables: Map({
+				flavour: 'delicious'
+			}),
+			content
+		})
+		expect(reverseTransformContent(state)).to.eventually.equal(
+			Map({
+				globalVariables: Map({
+					flavour: 'delicious'
+				}),
+				reverseGlobalVariables: Map({
+					delicious: 'flavour'
+				}),
+				content: 'It is <!flavour!>'
+			})
+		);
+	})
+
 	it('checkNewStores', ()=>{
 		const state = fromJS({
 			globalVariables: {
