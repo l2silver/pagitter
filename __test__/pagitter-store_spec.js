@@ -79,7 +79,9 @@ describe('pagitter-store', ()=>{
 			globalVariables: Map({
 				flavour: 'delicious'
 			}),
-			content
+			code: '/*_ _*/',
+			content, 
+			reverseContent: ''
 		})
 		expect(reverseTransformContent(state)).to.eventually.equal(
 			Map({
@@ -89,7 +91,8 @@ describe('pagitter-store', ()=>{
 				reverseGlobalVariables: Map({
 					delicious: 'flavour'
 				}),
-				content: 'It is <!flavour!>'
+				content,
+				reverseContent: 'It is <!flavour!>'
 			})
 		);
 	})
