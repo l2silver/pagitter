@@ -22,20 +22,29 @@ const readFile = promisify(fs.readFile);
 
 describe('pagitter-store', ()=>{
 
-	describe.skip('reverse', ()=>{
-		
+	describe('reverse', ()=>{
+		before(()=>{
+			mkdirp.sync('example');
+		});
+		after(()=>{
+			rimraf.sync('example');
+		});
 		it('on Last Writes New File', (done)=>{
 			const globalVariables = Map({
 					flavour: 'delicious'
 				})
-			const content = '\n';
+			const content = '';
+			const code = '';
 			const state = Map({
+				last: true,
+				pagitterFilepath: 'example/examplePagitter.js',
 				globalVariables,
+				code,
 				content,
 				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
 			});
 			reverse(state).then(()=>{
-				return readFile('pagitterStores/example.js','utf8')
+				return readFile('example/examplePagitter.js','utf8')
 			})
 			.then((content)=>{
 				expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
@@ -44,19 +53,31 @@ describe('pagitter-store', ()=>{
 		})
 	});
 	
-	it('writePagitter', (done)=>{
-		const state = Map({
-			reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+	describe('writePagitter', ()=>{
+		before(()=>{
+			mkdirp.sync('example');
 		});
-		writePagitter(state)
-		.then(()=>{
-			return readFile('pagitter.js','utf8')
-		})
-		.then((contents)=>{
-			expect(contents).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
-			return done()
+		after(()=>{
+			rimraf.sync('example');
+		});
+
+		it('writePagitter', (done)=>{
+
+			const state = Map({
+				pagitterFilepath: 'example/examplePagitter.js',
+				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+			});
+			return writePagitter(state)
+			.then(()=>{
+				return readFile('example/examplePagitter.js','utf8')
+			})
+			.then((contents)=>{
+				expect(contents).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+				return done()
+			})
 		})
 	})
+	
 
 	it('reverseGlobalVariables', ()=>{
 		const state = Map({

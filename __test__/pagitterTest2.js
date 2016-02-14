@@ -3,7 +3,6 @@
 function(){
 	return 'spagetti';
 }
-
 /*_ example5.js _*/
 
 function(){
