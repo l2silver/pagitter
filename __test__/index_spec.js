@@ -140,6 +140,7 @@ describe('index', ()=>{
 	});
 
 	describe('run', ()=>{
+		
 		const pluginList = [require("./../dist/pagitter-write").default];
 		it('creates file with base variable', (done)=>{
 			run('./__test__/pagitterTest1.js', pluginList)
@@ -161,7 +162,6 @@ describe('index', ()=>{
 				return done();
 			});
 		});
-
 	});
 
 	

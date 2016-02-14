@@ -15,46 +15,48 @@ import generatePromise
 		, reverseTransformContent
 		, reverseGlobalVariables
 		, reverse
+		, writePagitter
 } from './../lib/pagitter-store';
 const fsExists = promisify(fs.exists);
 const readFile = promisify(fs.readFile);
 
 describe('pagitter-store', ()=>{
 
-	describe('reverse', ()=>{
+	describe.skip('reverse', ()=>{
+		
 		it('on Last Writes New File', (done)=>{
-			const state = Map({
-				globalVariables: Map({
+			const globalVariables = Map({
 					flavour: 'delicious'
-				}),
-				reverseContent: '/*eTr <!base=example!> example.js eTr*/\n\nfunction(){\n\treturn "delicious"\n}'
+				})
+			const content = '\n';
+			const state = Map({
+				globalVariables,
+				content,
+				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
 			});
 			reverse(state).then(()=>{
-				return readFile('.pagitterStores/signup.js','utf8')
+				return readFile('pagitterStores/example.js','utf8')
 			})
 			.then((content)=>{
-				expect(content).to.equal('/*eTr <!base=example!> example.js eTr*/\n\nfunction(){\n\treturn "delicious"\n}');
+				expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
 				done()
 			});
 		})
 	});
-	it('reverse', ()=>{
+	
+	it('writePagitter', (done)=>{
 		const state = Map({
-			globalVariables: Map({
-				flavour: 'delicious'
-			})
+			reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+		});
+		writePagitter(state)
+		.then(()=>{
+			return readFile('pagitter.js','utf8')
 		})
-		expect(reverseGlobalVariables(state)).to.equal(
-			Map({
-				globalVariables: Map({
-					flavour: 'delicious'
-				}),
-				reverseGlobalVariables: Map({
-					delicious: 'flavour'
-				})
-			})
-		);
-	});	
+		.then((contents)=>{
+			expect(contents).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+			return done()
+		})
+	})
 
 	it('reverseGlobalVariables', ()=>{
 		const state = Map({
@@ -74,27 +76,30 @@ describe('pagitter-store', ()=>{
 		);
 	});
 	it('reverseTransform', ()=>{
-		const content = 'It is delicious';
+		const content = '\nIt is delicious';
+		const code = '/*_ _*/';
+		const globalVariables = Map({flavour: 'delicious'});
 		const state = Map({
-			globalVariables: Map({
-				flavour: 'delicious'
-			}),
-			code: '/*_ _*/',
+			globalVariables,
+			code,
 			content, 
 			reverseContent: ''
 		})
-		expect(reverseTransformContent(state)).to.eventually.equal(
-			Map({
-				globalVariables: Map({
-					flavour: 'delicious'
-				}),
-				reverseGlobalVariables: Map({
-					delicious: 'flavour'
-				}),
-				content,
-				reverseContent: 'It is <!flavour!>'
-			})
-		);
+		const nextState = Map({
+								globalVariables,
+								code,
+								content,
+								reverseContent: '/*_ _*/\nIt is <!flavour!>',
+								reverseGlobalVariables: Map({
+									delicious: 'flavour'
+								})
+							});
+		reverseTransformContent(state).then((tState)=>{
+			expect(tState).to.equal(
+				nextState
+			);	
+		})
+		
 	})
 
 	it('checkNewStores', ()=>{

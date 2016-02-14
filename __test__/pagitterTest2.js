@@ -1,10 +1,10 @@
-/*eTr <!base=example!> example4.js eTr*/
+/*_ <!base=example!> example4.js _*/
 
 function(){
 	return 'spagetti';
 }
 
-/*eTr example5.js eTr*/
+/*_ example5.js _*/
 
 function(){
 	return 'spagetti';
