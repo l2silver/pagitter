@@ -12,8 +12,8 @@ readFile('.pagitter', 'utf8')
 	var pagitterConfig = JSON.parse(json);
 	var cliPluginList = pagitterConfig.cliPlugins
 	var pluginList = pagitterConfig.plugins
-	if(pluginsList){
-		pluginsList.map(function(pluginName){});
+	if(pluginList){
+		pluginList.map(function(pluginName){});
 	}
 	var defaultPluginList = [];
 	pluginList.map(function(pluginName){
@@ -66,7 +66,7 @@ readFile('.pagitter', 'utf8')
 				}
 			}
 		})
-		pagitter.run(process.cwd()+'/.pagitterStore/'+program.reverse+'.js', reversePluginList)
+		pagitter.run(process.cwd()+'/.pagitterStores/'+program.reverse+'.js', reversePluginList)
 	}else{
 		pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList)
 	}

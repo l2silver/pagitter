@@ -3,11 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.addNewStores = exports.checkNewStores = undefined;
+exports.reverseTransformContent = exports.reverse = exports.addNewStores = exports.checkNewStores = undefined;
 exports.newStoresCreate = newStoresCreate;
 exports.addContent = addContent;
 exports.checkEndStores = checkEndStores;
 exports.setEndStoreNames = setEndStoreNames;
+exports.writePagitter = writePagitter;
+exports.reverseTransformRegExp = reverseTransformRegExp;
+exports.reverseGlobalVariables = reverseGlobalVariables;
+exports.flipMap = flipMap;
 
 var _immutable = require('immutable');
 
@@ -114,3 +118,43 @@ var writeStores = _bluebird2.default.method(function (state) {
 		}
 	});
 });
+
+var reverse = exports.reverse = _bluebird2.default.method(function (state) {
+	reverseTransformContent(state).then(function (nextState) {
+		if (nextState.has('last')) {
+			return writePagitter(nextState);
+		}
+		return nextState;
+	});
+});
+
+function writePagitter(state) {
+	return writeFile(process.cwd() + '/' + state.get('pagitterFilepath'), state.get('reverseContent'));
+}
+
+var reverseTransformContent = exports.reverseTransformContent = _bluebird2.default.method(function (state) {
+	var nextState = reverseGlobalVariables(state);
+	var newContent = nextState.get('content').replace(reverseTransformRegExp(nextState.get('reverseGlobalVariables')), function (matched) {
+		var switchedMatch = nextState.getIn(['reverseGlobalVariables', matched]);
+		return '<!' + switchedMatch + '!>';
+	});
+	return nextState.updateIn(['reverseContent'], function (content) {
+		return content + nextState.get('code') + newContent;
+	});
+});
+
+function reverseTransformRegExp(reverseGlobalVariables) {
+	var pattern = (0, _immutable.List)(reverseGlobalVariables.keySeq().toArray()).reduce(function (prev, current) {
+		return prev + current + '|';
+	}, '');
+	return new RegExp(pattern.slice(0, -1), 'g');
+}
+
+function reverseGlobalVariables(state) {
+	var globalVariables = state.get('globalVariables');
+	return state.set('reverseGlobalVariables', flipMap(globalVariables));
+}
+
+function flipMap(object) {
+	return object.toSeq().flip().toMap();
+}

@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.transformContent = exports.updateFilename = exports.rawVariableValueRegExp = exports.rawVariableKeyRegExp = exports.updateGlobalVariables = exports.rawVariableRegExp = exports.initialPluginPromise = exports.initialStatePromise = undefined;
 exports.run = run;
+exports.checkLast = checkLast;
 exports.addContentAndCode = addContentAndCode;
 exports.runActionsOnState = runActionsOnState;
 exports.generatePluginFunctions = generatePluginFunctions;
 exports.pluginStream = pluginStream;
-exports.catchErrors = catchErrors;
 exports.splitCode = splitCode;
 exports.splitContent = splitContent;
 exports.getRawVariables = getRawVariables;
@@ -30,23 +30,24 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var writeFile = (0, _bluebird.promisify)(require('fs').writeFile);
 var readFile = (0, _bluebird.promisify)(require('fs').readFile);
-var initialState = (0, _immutable.Map)({ globalVariables: (0, _immutable.Map)() });
 function run() {
 	var file = arguments.length <= 0 || arguments[0] === undefined ? 'pagitter.js' : arguments[0];
+	var pluginsList = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-	return readFile('.pagitter', 'utf8').then(function (json) {
-		var pluginsList = (0, _immutable.List)(JSON.parse(json).plugins);
-		var plugins = generatePluginFunctions(pluginsList);
-		return readFile(file, 'utf8').then(function (file) {
-			var actions = (0, _immutable.List)([updateGlobalVariables, updateFilename, transformContent, plugins]);
-			var codes = splitCode(file);
-			var contents = splitContent(file);
-			return codes.reduce(function (promiseReturningState, code, index) {
-				return promiseReturningState.then(function (state) {
-					return runActionsOnState(actions, addContentAndCode(state, contents.get(index - 1), code));
-				});
-			}, initialStatePromise(initialState));
-		});
+	var plugins = generatePluginFunctions(pluginsList);
+	var initialState = (0, _immutable.Map)({
+		globalVariables: (0, _immutable.Map)(),
+		pagitterFilepath: file
+	});
+	return readFile(file, 'utf8').then(function (file) {
+		var actions = (0, _immutable.List)([updateGlobalVariables, updateFilename, transformContent, plugins]);
+		var codes = splitCode(file);
+		var contents = splitContent(file);
+		return codes.reduce(function (promiseReturningState, code, index) {
+			return promiseReturningState.then(function (state) {
+				return runActionsOnState(actions, addContentAndCode(checkLast(state, index, codes), contents.get(index), code));
+			});
+		}, initialStatePromise(initialState));
 	}).catch(function (error) {
 		console.log('error', error);
 	});
@@ -54,6 +55,13 @@ function run() {
 var initialStatePromise = exports.initialStatePromise = _bluebird2.default.method(function (state) {
 	return state;
 });
+
+function checkLast(state, index, codes) {
+	if (index + 1 == codes.size) {
+		return state.set('last', true);
+	}
+	return state;
+}
 
 function addContentAndCode(state, content, code) {
 	return state.merge({
@@ -71,18 +79,17 @@ function runActionsOnState(actions, state) {
 }
 
 function generatePluginFunctions(plugins) {
-	return catchErrors(pluginStream(plugins));
+	return pluginStream(plugins);
 }
 
 function pluginStream(plugins) {
-	var pluginFunctions = plugins.unshift(initialPluginPromise).reduce(function (oldFunction, pluginName) {
+	var pluginFunctions = plugins.reduce(function (oldFunction, plugin) {
 		return function (state) {
 			return oldFunction(state).then(function (oldFunctionState) {
-				var generatePromise = require(pluginName).default;
-				return generatePromise(oldFunctionState);
+				return plugin(oldFunctionState);
 			});
 		};
-	});
+	}, initialPluginPromise);
 	return pluginFunctions;
 }
 
@@ -90,20 +97,12 @@ var initialPluginPromise = exports.initialPluginPromise = _bluebird2.default.met
 	return state;
 });
 
-function catchErrors(pluginFunctions) {
-	return function (state) {
-		return pluginFunctions(state).catch(function (error) {
-			console.log('error', error);
-		});
-	};
-}
-
 function splitCode(file) {
-	return (0, _immutable.List)(file.match(/\/\*eTr.+?eTr\*\//g));
+	return (0, _immutable.List)(file.match(/\/\*_.+?_\*\//g));
 }
 
 function splitContent(file) {
-	var contents = (0, _immutable.List)(file.split(/\/\*eTr.+?eTr\*\//));
+	var contents = (0, _immutable.List)(file.split(/\/\*_.+?_\*\//));
 	return contents.shift();
 }
 
@@ -114,10 +113,9 @@ var rawVariableRegExp = exports.rawVariableRegExp = /\<\!.+\!\>/ig;
 
 var updateGlobalVariables = exports.updateGlobalVariables = _bluebird2.default.method(function (state) {
 	var rawVariables = getRawVariables(state.get('code'));
-	var reducerReadyRawVariables = rawVariables.unshift(state.get('globalVariables'));
-	return state.set('globalVariables', reducerReadyRawVariables.reduce(function (updatingGlobalVariables, rawVariable) {
+	return state.set('globalVariables', rawVariables.reduce(function (updatingGlobalVariables, rawVariable) {
 		return updatingGlobalVariables.merge(convertRawVariableToObject(rawVariable));
-	}));
+	}, state.get('globalVariables')));
 });
 
 function convertRawVariableToObject(rawVariable) {
@@ -145,9 +143,9 @@ function getFilename(code) {
 	return code.replace(allButFilenameRegExp, '');
 }
 
-var eTrStartRegExp = /\/\*eTr/;
-var eTrEndRegExp = /eTr\*\//;
-var allButFilenameRegExp = new RegExp(eTrStartRegExp.source + '|' + eTrEndRegExp.source + '|' + rawVariableRegExp.source + '|' + '\\s', 'g');
+var _StartRegExp = /\/\*_/;
+var _EndRegExp = /_\*\//;
+var allButFilenameRegExp = new RegExp(_StartRegExp.source + '|' + _EndRegExp.source + '|' + rawVariableRegExp.source + '|' + '\\s', 'g');
 
 var transformContent = exports.transformContent = _bluebird2.default.method(function (state) {
 	var newContent = state.get('content').replace(transformRegExp(state.get('globalVariables')), function (matched) {
@@ -159,9 +157,9 @@ var transformContent = exports.transformContent = _bluebird2.default.method(func
 var removeTagsRegExp = /^\<\!|\!\>$/g;
 
 function transformRegExp(globalVariables) {
-	var pattern = (0, _immutable.List)(globalVariables.keySeq().toArray()).unshift('').reduce(function (prev, current) {
+	var pattern = (0, _immutable.List)(globalVariables.keySeq().toArray()).reduce(function (prev, current) {
 		return prev + transformMatchRegExp(current) + '|';
-	});
+	}, '');
 	return new RegExp(pattern.slice(0, -1), 'g');
 }
 
