@@ -37,7 +37,6 @@ describe('pagitter-store', ()=>{
 			mkdirp.sync('example');
 			return deleteFile('pagitter.js')
 				.catch(()=>{
-					console.log('fileDeleted');
 					const globalVariables = Map({
 						flavour: 'delicious',
 						base: 'example'
@@ -53,11 +52,9 @@ describe('pagitter-store', ()=>{
 				});
 				return reverse(state)
 				.then(()=>{
-					console.log('trying to read file')
 					return readFile('pagitter.js','utf8')
 				})
 				.then((content)=>{
-					console.log('fileread')
 					expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
 					rimraf.sync('example');
 				
@@ -241,6 +238,23 @@ describe('pagitter-store', ()=>{
 			const state = Map({
 				pagitterStores,
 				globalVariables
+			})
+			checkEndStores(state)
+			.then(()=>{
+				return readFile('.pagitterStores/signup.js','utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('\ncode\ncontent');
+				done()
+			})
+		});
+		it('writes store on last', (done)=>{
+			const pagitterStores = Map({signup: '\ncode\ncontent'});
+			const globalVariables = Map()
+			const state = Map({
+				pagitterStores,
+				globalVariables,
+				last: true
 			})
 			checkEndStores(state)
 			.then(()=>{
