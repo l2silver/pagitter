@@ -47,8 +47,8 @@ describe('index', ()=>{
 		expect(object).to.equal(Map({example: 'variable'}));
 	});
 	it('getRawVariables', ()=>{
-		const rawVariables = getRawVariables('/*_ <!example=variable!> ex1.js _*/');
-		expect(rawVariables).to.equal(List(['<!example=variable!>']));
+		const rawVariables = getRawVariables('/*_ <!example=variable!> <!base=example!> ex1.js _*/');
+		expect(rawVariables).to.equal(List(['<!example=variable!>', '<!base=example!>']));
 	});
 	it('getRawVariableKey', ()=>{
 		const rawVariableKey = getRawVariableKey('example=variable');

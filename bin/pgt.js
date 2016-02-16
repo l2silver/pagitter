@@ -31,7 +31,7 @@ readFile('.pagitter', 'utf8')
 	program
 	  .version(JSON.parse(fs.readFileSync(__dirname + '/../package.json', 'utf8')).version)
 	  .option('-w, --watch', 'Watch pagitter.js for changes')
-	  .option('-r, --reverse', 'Run get store command [value]', 'The name of the store')
+	  .option('-r, --reverse [value]', 'Run get store command [value]')
 	  .parse(process.argv);
 
 	if(program.watch){
@@ -58,7 +58,7 @@ readFile('.pagitter', 'utf8')
 
 	if(program.reverse){
 		var reversePluginList = [pagitterStore.reverse];
-		pluginsList.map(function(pluginName){
+		pluginList.map(function(pluginName){
 			if(pluginName != 'pagitter-store' && pluginName != 'pagitter-write'){
 				var plugin = require(pluginName)
 				if(plugin.reverse){
@@ -66,7 +66,7 @@ readFile('.pagitter', 'utf8')
 				}
 			}
 		})
-		pagitter.run(process.cwd()+'/.pagitterStores/'+program.reverse+'.js', reversePluginList)
+		pagitter.run('./.pagitterStores/'+program.reverse+'.js', reversePluginList)
 	}else{
 		pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList)
 	}

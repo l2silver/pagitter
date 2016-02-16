@@ -109,7 +109,7 @@ function splitContent(file) {
 function getRawVariables(code) {
 	return (0, _immutable.List)(code.match(rawVariableRegExp));
 }
-var rawVariableRegExp = exports.rawVariableRegExp = /\<\!.+\!\>/ig;
+var rawVariableRegExp = exports.rawVariableRegExp = /\<\!.+?\!\>/ig;
 
 var updateGlobalVariables = exports.updateGlobalVariables = _bluebird2.default.method(function (state) {
 	var rawVariables = getRawVariables(state.get('code'));

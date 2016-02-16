@@ -3,12 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.reverseTransformContent = exports.reverse = exports.addNewStores = exports.checkNewStores = undefined;
+exports.reverseTransformContent = exports.getContent = exports.reverse = exports.checkPagitterStoresExist = exports.addNewStores = exports.checkNewStores = undefined;
 exports.newStoresCreate = newStoresCreate;
 exports.addContent = addContent;
 exports.checkEndStores = checkEndStores;
 exports.setEndStoreNames = setEndStoreNames;
 exports.writePagitter = writePagitter;
+exports.checkFilenameExists = checkFilenameExists;
 exports.reverseTransformRegExp = reverseTransformRegExp;
 exports.reverseGlobalVariables = reverseGlobalVariables;
 exports.flipMap = flipMap;
@@ -31,6 +32,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var mkdirp = (0, _bluebird.promisify)(_mkdirp2.default);
 var writeFile = (0, _bluebird.promisify)(_fs2.default.writeFile);
+var readFile = (0, _bluebird.promisify)(_fs2.default.readFile);
+var stat = (0, _bluebird.promisify)(_fs2.default.stat);
 
 exports.default = function (state) {
 	var promise = [checkNewStores, addContent, checkEndStores].reduce(function (chainedFunctions, fn) {
@@ -91,6 +94,11 @@ function checkEndStores(state) {
 }
 
 function setEndStoreNames(state) {
+	if (state.has('last' && state.has('pagitterStores'))) {
+		console.log('last fire setEndStoreNames');
+		return state.set('pagitterStoresEnd', (0, _immutable.List)(state.get('pagitterStores').keySeq().toArray()));
+	}
+
 	var pagitterStoresEnd = state.getIn(['globalVariables', 'pagitterStoresEnd']);
 	if (pagitterStoresEnd.match(/\[.+\]/)) {
 		return state.set('pagitterStoresEnd', (0, _immutable.List)(eval(pagitterStoresCreate)));
@@ -110,7 +118,9 @@ var writeStores = _bluebird2.default.method(function (state) {
 	var nextState = stateWithOneLessStore.update('pagitterStoresEnd', function (list) {
 		return list.pop();
 	});
-	return writeFile(process.cwd() + '/.pagitterStores/' + store + '.js', storeContent).then(function () {
+	return checkPagitterStoresExist(state).then(function () {
+		return writeFile(process.cwd() + '/.pagitterStores/' + store + '.js', storeContent);
+	}).then(function () {
 		if (nextState.get('pagitterStoresEnd').count() > 0) {
 			return writeStores(nextState);
 		} else {
@@ -119,27 +129,65 @@ var writeStores = _bluebird2.default.method(function (state) {
 	});
 });
 
+var checkPagitterStoresExist = exports.checkPagitterStoresExist = _bluebird2.default.method(function (state) {
+	return stat('.pagitterStores').then(function () {
+		return state;
+	}).catch(function () {
+		return mkdirp('.pagitterStores').then(function () {
+			return state;
+		});
+	});
+});
+
 var reverse = exports.reverse = _bluebird2.default.method(function (state) {
-	reverseTransformContent(state).then(function (nextState) {
+	return reverseTransformContent(state).then(function (nextState) {
 		if (nextState.has('last')) {
 			return writePagitter(nextState);
+		} else {
+			return nextState;
 		}
-		return nextState;
 	});
 });
 
 function writePagitter(state) {
-	return writeFile(process.cwd() + '/' + state.get('pagitterFilepath'), state.get('reverseContent'));
+	console.log('content location', process.cwd() + '/pagitter.js');
+	console.log('reverseContent', state.get('reverseContent'));
+	return writeFile('pagitter.js', state.get('reverseContent'));
+}
+
+var getContent = exports.getContent = _bluebird2.default.method(function (state) {
+	var filename = checkFilenameExists(state);
+	console.log('filename', filename);
+	if (filename) {
+		return readFile(filename, 'utf8').then(function (content) {
+			console.log('file does exist');
+			return state.set('pagitterStoresExternalContent', content);
+		}).catch(function () {
+			console.log('file does not exist');
+			return state.set('pagitterStoresExternalContent', '');
+		});
+	} else {
+		return state.set('pagitterStoresExternalContent', '');
+	}
+});
+
+function checkFilenameExists(state) {
+	if (state.get('filename')) {
+		return state.get('globalVariables').has('base') ? './' + state.get('globalVariables').get('base') + '/' + state.get('filename') : './' + state.get('filename');
+	}
+	return false;
 }
 
 var reverseTransformContent = exports.reverseTransformContent = _bluebird2.default.method(function (state) {
 	var nextState = reverseGlobalVariables(state);
-	var newContent = nextState.get('content').replace(reverseTransformRegExp(nextState.get('reverseGlobalVariables')), function (matched) {
-		var switchedMatch = nextState.getIn(['reverseGlobalVariables', matched]);
-		return '<!' + switchedMatch + '!>';
-	});
-	return nextState.updateIn(['reverseContent'], function (content) {
-		return content + nextState.get('code') + newContent;
+	return getContent(nextState).then(function (nextNextState) {
+		var newContent = nextNextState.get('pagitterStoresExternalContent').replace(reverseTransformRegExp(nextNextState.get('reverseGlobalVariables')), function (matched) {
+			var switchedMatch = nextNextState.getIn(['reverseGlobalVariables', matched]);
+			return '<!' + switchedMatch + '!>';
+		});
+		return nextNextState.updateIn(['reverseContent'], function (content) {
+			return content ? content + nextNextState.get('code') + newContent : nextNextState.get('code') + newContent;
+		});
 	});
 });
 

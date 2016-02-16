@@ -16,40 +16,59 @@ import generatePromise
 		, reverseGlobalVariables
 		, reverse
 		, writePagitter
+		, checkFilenameExists
 } from './../lib/pagitter-store';
 const fsExists = promisify(fs.exists);
 const readFile = promisify(fs.readFile);
-
+const deleteFile = promisify(fs.unlink)
 describe('pagitter-store', ()=>{
 
+	it('checkFilenameExists', ()=>{
+		const state = Map({
+			globalVariables: Map({base: 'example'}),
+			filename: 'example.js'
+		})
+		expect(checkFilenameExists(state)).to.equal('./example/example.js')
+	});
+
+
 	describe('reverse', ()=>{
-		before(()=>{
-			mkdirp.sync('example');
-		});
-		after(()=>{
-			rimraf.sync('example');
-		});
 		it('on Last Writes New File', (done)=>{
-			const globalVariables = Map({
-					flavour: 'delicious'
+			mkdirp.sync('example');
+			return deleteFile('pagitter.js')
+				.catch(()=>{
+					console.log('fileDeleted');
+					const globalVariables = Map({
+						flavour: 'delicious',
+						base: 'example'
+					})
+				const content = '';
+				const code = '';
+				const state = Map({
+					last: true,
+					globalVariables,
+					code,
+					content,
+					reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+				});
+				return reverse(state)
+				.then(()=>{
+					console.log('trying to read file')
+					return readFile('pagitter.js','utf8')
 				})
-			const content = '';
-			const code = '';
-			const state = Map({
-				last: true,
-				pagitterFilepath: 'example/examplePagitter.js',
-				globalVariables,
-				code,
-				content,
-				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
-			});
-			reverse(state).then(()=>{
-				return readFile('example/examplePagitter.js','utf8')
+				.then((content)=>{
+					console.log('fileread')
+					expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+					rimraf.sync('example');
+				
+				})
+				.then(()=>{
+					return deleteFile('pagitter.js')
+				})
+				.then(()=>{
+					return done()
+				})
 			})
-			.then((content)=>{
-				expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
-				done()
-			});
 		})
 	});
 	
@@ -62,17 +81,23 @@ describe('pagitter-store', ()=>{
 		});
 
 		it('writePagitter', (done)=>{
-
 			const state = Map({
-				pagitterFilepath: 'example/examplePagitter.js',
 				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
 			});
-			return writePagitter(state)
+			return deleteFile('pagitter.js')
+			.catch(()=>{
+				return writePagitter(state);
+			})			
 			.then(()=>{
-				return readFile('example/examplePagitter.js','utf8')
+				return readFile('pagitter.js','utf8')
 			})
 			.then((contents)=>{
 				expect(contents).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+			})
+			.then(()=>{
+				return deleteFile('pagitter.js')
+			})
+			.then(()=>{
 				return done()
 			})
 		})
@@ -97,21 +122,27 @@ describe('pagitter-store', ()=>{
 		);
 	});
 	it('reverseTransform', ()=>{
+		mkdirp.sync('example');
+		fs.writeFileSync('example/example.js', '');
 		const content = '\nIt is delicious';
 		const code = '/*_ _*/';
-		const globalVariables = Map({flavour: 'delicious'});
+		const globalVariables = Map({base: 'example', flavour: 'delicious'});
+		const filename = 'example.js'
 		const state = Map({
 			globalVariables,
 			code,
-			content, 
-			reverseContent: ''
+			content,
+			filename
 		})
 		const nextState = Map({
 								globalVariables,
 								code,
 								content,
-								reverseContent: '/*_ _*/\nIt is <!flavour!>',
+								filename,
+								pagitterStoresExternalContent: "",
+								reverseContent: '/*_ _*/',
 								reverseGlobalVariables: Map({
+									example: 'base',
 									delicious: 'flavour'
 								})
 							});
@@ -242,9 +273,6 @@ describe('pagitter-store', ()=>{
 		);	
 	});
 	describe('generatePromise', ()=>{
-		before(()=>{
-			mkdirp.sync('.pagitterStores');
-		});
 		after(()=>{
 			rimraf.sync('.pagitterStores');
 		});
