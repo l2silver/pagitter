@@ -1,0 +1,82 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/nodejs', '/usr/bin/npm', 'install', 'gitty' ]
+2 info using npm@2.14.12
+3 info using node@v4.2.6
+4 verbose install initial load of /home/l2silver/pagitter/package.json
+5 warn package.json ntp@1.0.0 No repository field.
+6 warn package.json ntp@1.0.0 No bin file found at bin/ntp.js
+7 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/babel-cli/package.json
+8 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/babel-core/package.json
+9 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/babel-loader/package.json
+10 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/babel-preset-es2015/package.json
+11 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/bluebird/package.json
+12 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/chai/package.json
+13 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/chai-as-promised/package.json
+14 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/chai-immutable/package.json
+15 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/commander/package.json
+16 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/es6-promise/package.json
+17 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/fs/package.json
+18 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/immutable/package.json
+19 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/json-loader/package.json
+20 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/mkdirp/package.json
+21 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/mocha/package.json
+22 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/rimraf/package.json
+23 verbose installManyTop reading scoped package data from /home/l2silver/pagitter/node_modules/webpack/package.json
+24 info package.json fs@0.0.2 fs is also the name of a node core module.
+25 info package.json fs@0.0.2 No description
+26 info package.json fs@0.0.2 No repository field.
+27 verbose readDependencies loading dependencies from /home/l2silver/pagitter/package.json
+28 silly cache add args [ 'gitty', null ]
+29 verbose cache add spec gitty
+30 silly cache add parsed spec Result {
+30 silly cache add   raw: 'gitty',
+30 silly cache add   scope: null,
+30 silly cache add   name: 'gitty',
+30 silly cache add   rawSpec: '',
+30 silly cache add   spec: 'latest',
+30 silly cache add   type: 'tag' }
+31 silly addNamed gitty@latest
+32 verbose addNamed "latest" is being treated as a dist-tag for gitty
+33 info addNameTag [ 'gitty', 'latest' ]
+34 silly mapToRegistry name gitty
+35 silly mapToRegistry using default registry
+36 silly mapToRegistry registry https://registry.npmjs.org/
+37 silly mapToRegistry uri https://registry.npmjs.org/gitty
+38 verbose addNameTag registry:https://registry.npmjs.org/gitty not in flight; fetching
+39 verbose request uri https://registry.npmjs.org/gitty
+40 verbose request no auth needed
+41 info attempt registry request try #1 at 10:17:47 PM
+42 verbose request id c71e4eb13984a6c4
+43 http request GET https://registry.npmjs.org/gitty
+44 info retry will retry, error on last attempt: Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+45 info attempt registry request try #2 at 10:18:22 PM
+46 http request GET https://registry.npmjs.org/gitty
+47 info retry will retry, error on last attempt: Error: getaddrinfo ENOTFOUND registry.npmjs.org registry.npmjs.org:443
+48 info attempt registry request try #3 at 10:19:42 PM
+49 http request GET https://registry.npmjs.org/gitty
+50 verbose stack Error: connect ECONNREFUSED 23.235.40.162:443
+50 verbose stack     at Object.exports._errnoException (util.js:870:11)
+50 verbose stack     at exports._exceptionWithHostPort (util.js:893:20)
+50 verbose stack     at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1063:14)
+51 verbose cwd /home/l2silver/pagitter
+52 error Linux 3.19.0-47-generic
+53 error argv "/usr/bin/nodejs" "/usr/bin/npm" "install" "gitty"
+54 error node v4.2.6
+55 error npm  v2.14.12
+56 error code ECONNREFUSED
+57 error errno ECONNREFUSED
+58 error syscall connect
+59 error Error: connect ECONNREFUSED 23.235.40.162:443
+59 error     at Object.exports._errnoException (util.js:870:11)
+59 error     at exports._exceptionWithHostPort (util.js:893:20)
+59 error     at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1063:14)
+59 error  { [Error: connect ECONNREFUSED 23.235.40.162:443]
+59 error   code: 'ECONNREFUSED',
+59 error   errno: 'ECONNREFUSED',
+59 error   syscall: 'connect',
+59 error   address: '23.235.40.162',
+59 error   port: 443,
+59 error   parent: 'ntp' }
+60 error If you are behind a proxy, please make sure that the
+60 error 'proxy' config is set properly.  See: 'npm help config'
+61 verbose exit [ 1, true ]

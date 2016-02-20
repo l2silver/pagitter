@@ -32,7 +32,6 @@
     "chai-immutable": "^1.5.3",
     "es6-promise": "^3.0.2",
     "immutable": "^3.7.6",
-    "json-loader": "^0.5.4",
     "mocha": "^2.4.5",
     "rimraf": "^2.5.1"  
   }
