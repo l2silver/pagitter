@@ -6,6 +6,7 @@ var Promise = require('bluebird');
 var readFile = Promise.promisify(fs.readFile);
 var pagitterStore = require('./../dist/pagitter-store');
 var pagitterWrite = require('./../dist/pagitter-write');
+var pagitterDelete = require('./../dist/pagitter-remove');
 
 readFile('.pagitter', 'utf8')
 .then((json)=>{
@@ -32,6 +33,7 @@ readFile('.pagitter', 'utf8')
 	  .version(JSON.parse(fs.readFileSync(__dirname + '/../package.json', 'utf8')).version)
 	  .option('-w, --watch', 'Watch pagitter.js for changes')
 	  .option('-r, --reverse [value]', 'Run get store command [value]')
+	  .option('-d, --delete', 'delete filenames')
 	  .parse(process.argv);
 
 	if(program.watch){
@@ -66,11 +68,22 @@ readFile('.pagitter', 'utf8')
 				}
 			}
 		})
-		pagitter.run('./.pagitterStores/'+program.reverse+'.js', reversePluginList)
-	}else{
-		pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList)
+		return pagitter.run('./.pagitterStores/'+program.reverse+'.js', reversePluginList)	
 	}
-	     
+	if(program.delete){
+		var deletePluginList = [pagitterDelete.remove];
+		pluginList.map(function(pluginName){
+			if(pluginName != 'pagitter-store' && pluginName != 'pagitter-write'){
+				var plugin = require(pluginName)
+				if(plugin.delete){
+					deletePluginList.push(plugin.reverse);
+				}
+			}
+		})
+		return pagitter.run(process.cwd()+'/pagitter.js', deletePluginList);
+	}
+	console.log(process.cwd()+'/pagitter.js')
+	pagitter.run(process.cwd()+'/pagitter.js', defaultPluginList);
 	/**
 	 * Hide the cursor.
 	 */

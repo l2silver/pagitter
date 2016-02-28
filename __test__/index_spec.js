@@ -13,6 +13,7 @@ import {
 	, getFilename
 	, transformRegExp
 	, transformContent
+	, transformEvaluate
 	, initialPluginPromise
 	, pluginStream
 	, generatePluginFunctions
@@ -43,7 +44,11 @@ describe('index', ()=>{
 		expect(contents).to.equal(List(['/*_ ex1.js _*/', '/*_ ex2.js _*/', '/*_ ex3.js _*/']));
 	});
 	it('convertRawVariableToObject', ()=>{
-		const object = convertRawVariableToObject('<!example=variable!>');
+		const object = convertRawVariableToObject('<!example=variable!>', Map());
+		expect(object).to.equal(Map({example: 'variable'}));
+	});
+	it('convertRawVariableToObject with globalVariables', ()=>{
+		const object = convertRawVariableToObject('<!example=@name@!>', Map({name: 'variable'}));
 		expect(object).to.equal(Map({example: 'variable'}));
 	});
 	it('getRawVariables', ()=>{
@@ -94,7 +99,7 @@ describe('index', ()=>{
 	});
 	it('transformRegExp', ()=>{
 		const transformPattern = transformRegExp(Map({example: 'variable', example_2: 'variable_2'}));
-		expect(transformPattern).to.eql(/\<\!example\!\>|\<\!example_2\!\>/g);
+		expect(transformPattern).to.eql(/(\<\!example\!\>|\@example\@)|(\<\!example_2\!\>|\@example_2\@)/g);
 	});
 	it('transformContent', (done)=>{
 		const content = '<!example!> <!example_2!> ex1.js';
@@ -114,6 +119,12 @@ describe('index', ()=>{
 		});
 		
 	});
+	it('transformEvaluate', ()=>{
+		expect(transformEvaluate('^^1+1')).to.equal(2);
+	})
+	it('transformEvaluate function', ()=>{
+		expect(transformEvaluate('^^function sayHello(){console.log("hello");return 2;}sayHello();')).to.equal(2);
+	})
 	it('initialPluginPromise', ()=>{
 		const state = Map();
 		expect(initialPluginPromise(state)).to.eventually.equal(Map());
