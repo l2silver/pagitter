@@ -62,3 +62,57 @@ code section by wrapping them in @ symbols')
 console.log('variables will be evaluated if they start with ^^')
 }
 ````
+### Stores
+Pagitter comes with the store plugin which allows you to create stores
+
+*home/yourProject/pagitter.js*
+````
+/*_ <!pagitterStoresCreate=storeName!> example.js _*/
+()=>{
+console.log('this creates a store file in the .pagitter folder in the root directory')
+console.log('starting from when the store is created
+, all of the following code and content will be saves to the store')
+}
+````
+After you save a store, you can access it by running the following command
+````
+$pgt --reverse storeName
+````
+We use the reverse option because before the store is thrown into the pagitter file, because it looks through all of the wouldbe files in the store, and records their context. That way, a user can make regular changes to the content, and still use pagitter to update files without worrying about overwriting new content.
+### Delete Files
+Pagitter comes with a delete plugin that allows users to delete all of the filenames in the pagitter.js document. This is useful for quickly changing the names of a group of files that share a similar name component.
+
+*For Example*
+Suppose you had:  
+userController.js
+userModel.js
+userView.js
+
+which you wanted to change to:  
+personController.js
+personModel.js
+personView.js
+
+*home/yourProject/pagitter.js*
+````
+/*_ <!baseName=user!> @baseName@Controller.js _*/
+...
+/*_  @baseName@Model.js _*/
+...
+/*_  @baseName@View.js _*/
+...
+````
+````
+$pgt --d
+````
+--->Deletes userController.js, userModel.js, userView.js
+*home/yourProject/pagitter.js*
+````
+/*_ <!baseName=person!> @baseName@Controller.js _*/
+...
+/*_  @baseName@Model.js _*/
+...
+/*_  @baseName@View.js _*/
+...
+````
+--->Writes personController.js, personModel.js, personView.js
