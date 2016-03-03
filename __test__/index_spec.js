@@ -39,13 +39,13 @@ describe('index', ()=>{
 	it('trimContent', ()=>{
 		expect(trimContent('\\n\\n\\nhello\\n\\n\\n')).to.equal('hello');
 	});
-	it.only('splitContent', ()=>{
+	it('splitContent', ()=>{
 		const contents = splitContent(simpleJsonFile);
-		expect(contents).to.equal(List([' ','a',' ', 'b',' ', 'c']));
+		expect(contents).to.equal(List(['a', 'b','c']));
 	});
 	it('splitCode', ()=>{
 		const contents = splitCode(simpleJsonFile);
-		expect(contents).to.equal(List(['/*_ ex1.js _*/', '/*_ ex2.js _*/', '/*_ ex3.js */']));
+		expect(contents).to.equal(List(['/*_ ex1.js */', '/*_ ex2.js */', '/*_ ex3.js */']));
 	});
 	it('convertRawVariableToObject', ()=>{
 		const object = convertRawVariableToObject('<!example=variable!>', Map());
