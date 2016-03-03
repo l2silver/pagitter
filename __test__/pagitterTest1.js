@@ -1,4 +1,4 @@
-/*_ <!base=example!> example3.js */
+/*_ <!base=example!> @base@/example3.js */
 
 function(){
 	return 'spagetti';

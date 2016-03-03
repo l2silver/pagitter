@@ -37,15 +37,15 @@ describe('index', ()=>{
 		rimraf.sync('example');
 	});
 	it('trimContent', ()=>{
-		expect(trimContent('\\n\\n\\nhello\\n\\n\\n')).to.equal('hello');
+		expect(trimContent('\n\n\nhello\n\n\n')).to.equal('hello');
 	});
-	it.only('splitContent', ()=>{
+	it('splitContent', ()=>{
 		const contents = splitContent(simpleJsonFile);
-		expect(contents).to.equal(List([' ','a',' ', 'b',' ', 'c']));
+		expect(contents).to.equal(List(['a','b','c']));
 	});
 	it('splitCode', ()=>{
 		const contents = splitCode(simpleJsonFile);
-		expect(contents).to.equal(List(['/*_ ex1.js _*/', '/*_ ex2.js _*/', '/*_ ex3.js */']));
+		expect(contents).to.equal(List(['/*_ ex1.js */', '/*_ ex2.js */', '/*_ ex3.js */']));
 	});
 	it('convertRawVariableToObject', ()=>{
 		const object = convertRawVariableToObject('<!example=variable!>', Map());
@@ -94,7 +94,7 @@ describe('index', ()=>{
 			})
 		);
 		updatedGlobalVariablesState.then((state)=>{
-			expect(state.get('globalVariables')).to.equal(Map({example: '\nvariable'}));
+			expect(state.get('globalVariables')).to.equal(Map({example: 'variable'}));
 			return done();
 		});
 		
@@ -178,14 +178,14 @@ describe('index', ()=>{
 
 	describe('run', ()=>{
 		
-		const pluginList = [require("./../dist/pagitter-write").default];
+		const pluginList = [require("./../lib/pagitter-write").default];
 		it('creates file with base variable', (done)=>{
 			run('./__test__/pagitterTest1.js', pluginList)
 			.then(()=>{
 				return readFile('example/example3.js', 'utf8')
 			})
 			.then((content)=>{
-				expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+				expect(content).to.equal('function(){\n\treturn \'spagetti\';\n}');
 				return done();
 			});
 		});
@@ -195,7 +195,17 @@ describe('index', ()=>{
 				return readFile('example/example4.js', 'utf8')
 			})
 			.then((content)=>{
-				expect(content).to.equal('\n\nfunction(){\n\treturn \'spagetti\';\n}\n');
+				expect(content).to.equal('function(){\n\treturn \'spagetti\';\n}');
+				return done();
+			});
+		});
+		it('creates files after multiple rows of code', (done)=>{
+			run('./__test__/pagitterTest3.js', pluginList)
+			.then(()=>{
+				return readFile('example/example6.js', 'utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('function(){\n\treturn \'spagetti\';\n}');
 				return done();
 			});
 		});
