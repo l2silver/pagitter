@@ -101,27 +101,29 @@ var initialPluginPromise = exports.initialPluginPromise = _bluebird2.default.met
 });
 
 function splitCode(file) {
-	return (0, _immutable.List)(file.match(/\/\*_.+?\*\//g));
+	return (0, _immutable.List)(file.match(/\/\*_(.|\s)+?\*\//g));
 }
 
 function splitContent(file) {
-	var contents = (0, _immutable.List)(file.split(/\/\*_.+?\*\//));
+	var contents = (0, _immutable.List)(file.split(/\/\*_(?:.|\s)+?\*\//g));
 	return contents.shift();
 }
 
 function getRawVariables(code) {
 	return (0, _immutable.List)(code.match(rawVariableRegExp));
 }
-var rawVariableRegExp = exports.rawVariableRegExp = /\<\!.+?\!\>/ig;
+var rawVariableRegExp = exports.rawVariableRegExp = /\<\!(.|\s)+?\!\>/ig;
 
 var updateGlobalVariables = exports.updateGlobalVariables = _bluebird2.default.method(function (state) {
 	var rawVariables = getRawVariables(state.get('code'));
+	console.log('rawVariables', rawVariables);
 	return state.set('globalVariables', rawVariables.reduce(function (updatingGlobalVariables, rawVariable) {
 		return updatingGlobalVariables.merge(convertRawVariableToObject(rawVariable, updatingGlobalVariables));
 	}, state.get('globalVariables')));
 });
 
 function convertRawVariableToObject(rawVariable, globalVariables) {
+	console.log('rawVariable', rawVariable);
 	var cleanRawVariable = rawVariable.slice(2, -2);
 	var rawVariableKey = getRawVariableKey(cleanRawVariable);
 	var rawVariableValue = getRawVariableValue(cleanRawVariable);
@@ -133,11 +135,11 @@ function convertRawVariableToObject(rawVariable, globalVariables) {
 function getRawVariableKey(rawVariable) {
 	return rawVariable.match(rawVariableKeyRegExp)[0];
 }
-var rawVariableKeyRegExp = exports.rawVariableKeyRegExp = /^.+?(?=\=)/;
+var rawVariableKeyRegExp = exports.rawVariableKeyRegExp = /^(.|\s)+?(?=\=)/;
 function getRawVariableValue(rawVariable) {
 	return rawVariable.replace(rawVariableValueRegExp, '');
 }
-var rawVariableValueRegExp = exports.rawVariableValueRegExp = /^.+?\=/;
+var rawVariableValueRegExp = exports.rawVariableValueRegExp = /^(.|\s)+?\=/;
 
 var processedVariableValueRegExp = exports.processedVariableValueRegExp = /\!\w+?\!/;
 

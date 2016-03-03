@@ -41,6 +41,7 @@ describe('index', ()=>{
 	});
 	it('splitContent', ()=>{
 		const contents = splitContent(simpleJsonFile);
+
 		expect(contents).to.equal(List(['a','b','c']));
 	});
 	it('splitCode', ()=>{
