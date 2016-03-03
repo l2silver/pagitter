@@ -17,6 +17,7 @@ import {
 	, initialPluginPromise
 	, pluginStream
 	, generatePluginFunctions
+	, trimContent
 } from './../lib/index';
 import {fromJS, List, Map} from 'immutable';
 import {promisify} from 'bluebird';
@@ -24,7 +25,7 @@ import fs from 'fs';
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 import rimraf from 'rimraf';
-const simpleJsonFile = "/*_ ex1.js _*/a/*_ ex2.js _*/b/*_ ex3.js _*/c"
+const simpleJsonFile = "/*_ ex1.js */a/*_ ex2.js */b/*_ ex3.js */c"
 const jsonFile = "/*_ <!base=example!> <!pasta=spagetti!> example.js _*/\n\nfunction(){\n\treturn '$_{pasta}';\n}\n\n/*_ base=example pasta=noodles example2.js _*/\n\nfunction(){\n\treturn '$_{pasta}';\n}\n\n/*_ base=example pasta=kimchi example3.js _*/\n\nfunction(){\n\treturn '$_{pasta}';\n}\n;"
 
 describe('index', ()=>{
@@ -35,13 +36,16 @@ describe('index', ()=>{
 	after(()=>{
 		rimraf.sync('example');
 	});
-	it('splitContent', ()=>{
+	it('trimContent', ()=>{
+		expect(trimContent('\\n\\n\\nhello\\n\\n\\n')).to.equal('hello');
+	});
+	it.only('splitContent', ()=>{
 		const contents = splitContent(simpleJsonFile);
-		expect(contents).to.equal(List(['a', 'b', 'c']));
+		expect(contents).to.equal(List([' ','a',' ', 'b',' ', 'c']));
 	});
 	it('splitCode', ()=>{
 		const contents = splitCode(simpleJsonFile);
-		expect(contents).to.equal(List(['/*_ ex1.js _*/', '/*_ ex2.js _*/', '/*_ ex3.js _*/']));
+		expect(contents).to.equal(List(['/*_ ex1.js _*/', '/*_ ex2.js _*/', '/*_ ex3.js */']));
 	});
 	it('convertRawVariableToObject', ()=>{
 		const object = convertRawVariableToObject('<!example=variable!>', Map());
@@ -63,6 +67,10 @@ describe('index', ()=>{
 		const rawVariableValue = getRawVariableValue('example=variable');
 		expect(rawVariableValue).to.equal('variable');
 	});
+	it('getRawVariableValue multiline', ()=>{
+		const rawVariableValue = getRawVariableValue('example=\nvariable');
+		expect(rawVariableValue).to.equal('\nvariable');
+	});
 	it('updateGlobalVariables', (done)=>{
 		const code = '/*_ <!example=variable!> ex1.js _*/';
 		const globalVariables = Map();
@@ -77,8 +85,22 @@ describe('index', ()=>{
 		});
 		
 	});
+	it('updateGlobalVariables multiline', (done)=>{
+		const code = '/*_ <!example=\nvariable!> ex1.js _*/';
+		const globalVariables = Map();
+		const updatedGlobalVariablesState = updateGlobalVariables(Map({
+			globalVariables,
+			code
+			})
+		);
+		updatedGlobalVariablesState.then((state)=>{
+			expect(state.get('globalVariables')).to.equal(Map({example: '\nvariable'}));
+			return done();
+		});
+		
+	});
 	it('updateFilename', (done)=>{
-		const code = '/*_ <!example=variable!> ex1.js _*/';
+		const code = '/*_ <!example=variable!> ex1.js */';
 		const globalVariables = Map();
 
 		const updatedFilenameState = updateFilename(
@@ -94,15 +116,19 @@ describe('index', ()=>{
 		
 	});
 	it('getFilename', ()=>{
-		const filename = getFilename('/*_ <!example=variable!> ex1.js _*/');
+		const filename = getFilename('/*_ <!example=variable!> ex1.js */', Map());
 		expect(filename).to.equal('ex1.js');
+	});
+	it('getFilename variable', ()=>{
+		const filename = getFilename('/*_ <!example=variable!> @example@ex1.js */', Map({example: 'variable'}));
+		expect(filename).to.equal('variableex1.js');
 	});
 	it('transformRegExp', ()=>{
 		const transformPattern = transformRegExp(Map({example: 'variable', example_2: 'variable_2'}));
-		expect(transformPattern).to.eql(/(\<\!example\!\>|\@example\@)|(\<\!example_2\!\>|\@example_2\@)/g);
+		expect(transformPattern).to.eql(/(\@example\@)|(\@example_2\@)/g);
 	});
 	it('transformContent', (done)=>{
-		const content = '<!example!> <!example_2!> ex1.js';
+		const content = '@example@ @example_2@ ex1.js';
 		const globalVariables = Map({
 			example: 'variable'
 			, example_2: 'variable_2'

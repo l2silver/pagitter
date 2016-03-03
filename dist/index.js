@@ -17,6 +17,7 @@ exports.convertRawVariableToObject = convertRawVariableToObject;
 exports.getRawVariableKey = getRawVariableKey;
 exports.getRawVariableValue = getRawVariableValue;
 exports.getFilename = getFilename;
+exports.trimContent = trimContent;
 exports.transform = transform;
 exports.transformRegExp = transformRegExp;
 exports.transformMatchRegExp = transformMatchRegExp;
@@ -100,11 +101,11 @@ var initialPluginPromise = exports.initialPluginPromise = _bluebird2.default.met
 });
 
 function splitCode(file) {
-	return (0, _immutable.List)(file.match(/\/\*_.+?_\*\//g));
+	return (0, _immutable.List)(file.match(/\/\*_.+?\*\//g));
 }
 
 function splitContent(file) {
-	var contents = (0, _immutable.List)(file.split(/\/\*_.+?_\*\//));
+	var contents = (0, _immutable.List)(file.split(/\/\*_.+?\*\//));
 	return contents.shift();
 }
 
@@ -141,25 +142,33 @@ var rawVariableValueRegExp = exports.rawVariableValueRegExp = /^.+?\=/;
 var processedVariableValueRegExp = exports.processedVariableValueRegExp = /\!\w+?\!/;
 
 var updateFilename = exports.updateFilename = _bluebird2.default.method(function (state) {
-	var filename = getFilename(state.get('code'));
+	var filename = getFilename(state.get('code'), state.get('globalVariables'));
 	return state.set('filename', filename);
 });
 
-function getFilename(code) {
-	return code.replace(allButFilenameRegExp, '');
+function getFilename(code, globalVariables) {
+	var rawFilename = code.replace(allButFilenameRegExp, '');
+	return transform(rawFilename, globalVariables);
 }
 
 var _StartRegExp = /\/\*_/;
-var _EndRegExp = /_\*\//;
+var _EndRegExp = /\*\//;
 var allButFilenameRegExp = new RegExp(_StartRegExp.source + '|' + _EndRegExp.source + '|' + rawVariableRegExp.source + '|' + '\\s', 'g');
 
 var transformContent = exports.transformContent = _bluebird2.default.method(function (state) {
-	return state.set('content', transform(state.get('content'), state.get('globalVariables')));
+	if (state.get('globalVariables').toList().size > 0) {
+		return state.set('content', transform(state.get('content'), state.get('globalVariables')));
+	}
+	return state;
 });
-var removeTagsRegExp = /(^\<\!|\!\>)|(^\@|\@$)/g;
+var removeTagsRegExp = /^\<\!|\!\>|^\@|\@$/g;
+
+function trimContent(content) {
+	return content.replace(/(\\n)*$|^(\\n)*/g, '');
+}
 
 function transform(content, globalVariables) {
-	return content.replace(transformRegExp(globalVariables), function (matched) {
+	return trimContent(content).replace(transformRegExp(globalVariables), function (matched) {
 		var globalVariable = matched.replace(removeTagsRegExp, '');
 		return globalVariables.get(globalVariable);
 	});
@@ -178,7 +187,7 @@ function transformRegExp(globalVariables) {
 }
 
 function transformMatchRegExp(global) {
-	return '(\\<\\!' + global + '\\!\\>|\\@' + global + '\\@)';
+	return '(\\@' + global + '\\@)';
 }
 
 function transformEvaluate(value) {

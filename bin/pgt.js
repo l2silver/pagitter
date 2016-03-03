@@ -8,7 +8,7 @@ var pagitterStore = require('./../dist/pagitter-store');
 var pagitterWrite = require('./../dist/pagitter-write');
 var pagitterDelete = require('./../dist/pagitter-remove');
 
-readFile('.pagitter', 'utf8')
+readFile('pgt.config.js', 'utf8')
 .then((json)=>{
 	var pagitterConfig = JSON.parse(json);
 	var cliPluginList = pagitterConfig.cliPlugins

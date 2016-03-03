@@ -48,14 +48,14 @@ describe('pagitter-store', ()=>{
 					globalVariables,
 					code,
 					content,
-					reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+					reverseContent: '/*_ <!base=example!> example.js */\n\nfunction(){\n\treturn "delicious"\n}'
 				});
 				return reverse(state)
 				.then(()=>{
 					return readFile('pagitter.js','utf8')
 				})
 				.then((content)=>{
-					expect(content).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+					expect(content).to.equal('/*_ <!base=example!> example.js */\n\nfunction(){\n\treturn "delicious"\n}\n\n');
 					rimraf.sync('example');
 				
 				})
@@ -79,7 +79,7 @@ describe('pagitter-store', ()=>{
 
 		it('writePagitter', (done)=>{
 			const state = Map({
-				reverseContent: '/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}'
+				reverseContent: '/*_ <!base=example!> example.js */\n\nfunction(){\n\treturn "delicious"\n}'
 			});
 			return deleteFile('pagitter.js')
 			.catch(()=>{
@@ -89,7 +89,7 @@ describe('pagitter-store', ()=>{
 				return readFile('pagitter.js','utf8')
 			})
 			.then((contents)=>{
-				expect(contents).to.equal('/*_ <!base=example!> example.js _*/\n\nfunction(){\n\treturn "delicious"\n}');
+				expect(contents).to.equal('/*_ <!base=example!> example.js */\n\nfunction(){\n\treturn "delicious"\n}');
 			})
 			.then(()=>{
 				return deleteFile('pagitter.js')
@@ -118,11 +118,11 @@ describe('pagitter-store', ()=>{
 			})
 		);
 	});
-	it('reverseTransform', ()=>{
+	it('reverseTransform', (done)=>{
 		mkdirp.sync('example');
 		fs.writeFileSync('example/example.js', '');
 		const content = '\nIt is delicious';
-		const code = '/*_ _*/';
+		const code = '/*_ */';
 		const globalVariables = Map({base: 'example', flavour: 'delicious'});
 		const filename = 'example.js'
 		const state = Map({
@@ -136,17 +136,19 @@ describe('pagitter-store', ()=>{
 								code,
 								content,
 								filename,
-								pagitterStoresExternalContent: "",
-								reverseContent: '/*_ _*/',
 								reverseGlobalVariables: Map({
 									example: 'base',
 									delicious: 'flavour'
-								})
+								}),
+								pagitterStoresExternalContent: "",
+								reverseContent: '/*_ */\n'
+								
 							});
 		reverseTransformContent(state).then((tState)=>{
 			expect(tState).to.equal(
 				nextState
-			);	
+			);
+			return done();
 		})
 		
 	})

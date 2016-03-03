@@ -1,9 +1,9 @@
 {
-  "name": "ntp",
-  "version": "1.0.0",
-  "description": "",
+  "name": "pagitter",
+  "version": "0.0.1",
+  "description": "A lightweight file generator",
   "bin": {
-    "ntp": "bin/pgt.js"
+    "pgt": "bin/pgt.js"
   },
   "main": "./dist/index.js",
   "scripts": {
@@ -11,12 +11,13 @@
     "test:watch": "npm run test -- --watch",
     "build": "babel lib --out-dir dist"
   },
-  "author": "",
+  "author": "Leigh Silverstein",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.1.5",
     "commander": "^2.9.0",
     "fs": "0.0.2",
+    "immutable": "^3.7.6",
     "mkdirp": "^0.5.1"
   },
   "devDependencies": {
@@ -28,7 +29,6 @@
     "chai-as-promised": "^5.2.0",
     "chai-immutable": "^1.5.3",
     "es6-promise": "^3.0.2",
-    "immutable": "^3.7.6",
     "mocha": "^2.4.5",
     "rimraf": "^2.5.1"  
   }

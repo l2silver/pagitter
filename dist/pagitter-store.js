@@ -10,6 +10,7 @@ exports.checkEndStores = checkEndStores;
 exports.setEndStoreNames = setEndStoreNames;
 exports.writePagitter = writePagitter;
 exports.checkFilenameExists = checkFilenameExists;
+exports.findReplaceGlobalVariables = findReplaceGlobalVariables;
 exports.reverseTransformRegExp = reverseTransformRegExp;
 exports.reverseGlobalVariables = reverseGlobalVariables;
 exports.flipMap = flipMap;
@@ -157,6 +158,7 @@ function writePagitter(state) {
 
 var getContent = exports.getContent = _bluebird2.default.method(function (state) {
 	var filename = checkFilenameExists(state);
+	console.log('filename', filename);
 	if (filename) {
 		return readFile(filename, 'utf8').then(function (content) {
 			return state.set('pagitterStoresExternalContent', content);
@@ -178,15 +180,23 @@ function checkFilenameExists(state) {
 var reverseTransformContent = exports.reverseTransformContent = _bluebird2.default.method(function (state) {
 	var nextState = reverseGlobalVariables(state);
 	return getContent(nextState).then(function (nextNextState) {
-		var newContent = nextNextState.get('pagitterStoresExternalContent').replace(reverseTransformRegExp(nextNextState.get('reverseGlobalVariables')), function (matched) {
-			var switchedMatch = nextNextState.getIn(['reverseGlobalVariables', matched]);
-			return '<!' + switchedMatch + '!>';
-		});
+		var newContent = findReplaceGlobalVariables(nextNextState);
 		return nextNextState.updateIn(['reverseContent'], function (content) {
-			return content ? content + nextNextState.get('code') + newContent : nextNextState.get('code') + newContent;
+			return content ? content + '\n' + nextNextState.get('code') + '\n' + newContent : nextNextState.get('code') + '\n' + newContent;
 		});
 	});
 });
+
+function findReplaceGlobalVariables(state) {
+	if (state.get('globalVariables').toList().size > 0) {
+		return state.get('pagitterStoresExternalContent').replace(reverseTransformRegExp(state.get('reverseGlobalVariables')), function (matched) {
+			var switchedMatch = state.getIn(['reverseGlobalVariables', matched]);
+			return '@' + switchedMatch + '@';
+		});
+	} else {
+		return state.get('pagitterStoresExternalContent');
+	}
+}
 
 function reverseTransformRegExp(reverseGlobalVariables) {
 	var pattern = (0, _immutable.List)(reverseGlobalVariables.keySeq().toArray()).reduce(function (prev, current) {
