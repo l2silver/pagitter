@@ -11,6 +11,10 @@
     "test:watch": "npm run test -- --watch",
     "build": "babel lib --out-dir dist"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/l2silver/pagitter.git"
+  },
   "author": "Leigh Silverstein",
   "license": "ISC",
   "dependencies": {
@@ -29,6 +33,6 @@
     "chai-immutable": "^1.5.3",
     "es6-promise": "^3.0.2",
     "mocha": "^2.4.5",
-    "rimraf": "^2.5.1"  
+    "rimraf": "^2.5.1"
   }
 }
