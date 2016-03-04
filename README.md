@@ -64,6 +64,24 @@ code section by wrapping them in @ symbols')
 console.log('variables will be evaluated if they start with ^^')
 }
 ````
+### Setup
+Create a config file called `pgt.config.js`
+This file will hold the plugins to be used with pagitter.
+
+*Example pgt.config.js*
+````
+{
+	"plugins": [
+		"pagitter-write"
+		, "pagitter-store"
+	]
+}
+````
+Then create your first pagitter.js file in the root directory
+````
+/*_ example.js */
+````
+And run `$ pgt` to output the file
 ### Stores
 Pagitter comes with the store plugin which allows you to create stores
 
@@ -80,7 +98,7 @@ After you save a store, you can access it by running the following command
 ````
 $pgt --reverse storeName
 ````
-We use the reverse option because before the store is thrown into the pagitter file, because it looks through all of the wouldbe files in the store, and records their context. That way, a user can make regular changes to the content, and still use pagitter to update files without worrying about overwriting new content.
+We use the reverse option because before the store is thrown into the pagitter file, because it looks through all of the wouldbe files in the store, and records their content. That way, a user can make regular changes to the content, and still use pagitter to update files without worrying about overwriting new content.
 ### Delete Files
 Pagitter comes with a delete plugin that allows users to delete all of the filenames in the pagitter.js document. This is useful for quickly changing the names of a group of files that share a similar name component.
 
