@@ -8,7 +8,7 @@ The lightweight file generator designed to facilitate application development.
 
 *home/yourProject/pagitter.js*
 ````
-/*_ example.js _*/
+/*_ example.js */
 ()=>{
 console.log('hello')
 }
@@ -28,7 +28,7 @@ $ pgt --watch
 ````
 *home/yourProject/pagitter.js*
 ````
-/*_ example.js _*/
+/*_ example.js */
 ()=>{
 console.log('After running pgt with a watch option, 
 anytime the pagitter file is saved, the files will be regenerated')
@@ -44,22 +44,22 @@ anytime the pagitter file is saved, the files will be regenerated')
 ````
 *home/yourProject/pagitter.js*
 ````
-/*_ <!callWhat=variable!> example.js _*/
+/*_ <!callWhat=variable!> example.js */
 ()=>{
 console.log('Call <!callWhat!>s declared in the code section')
 }
-/*_ example2.js _*/
+/*_ example2.js */
 ()=>{
 console.log('Once a <!callWhat!> is declared, 
 all codes downstream in the pagitter file will have access to it, 
 unless it is overwritten')
 }
-/*_ @callWhat@/example.js _*/
+/*_ @callWhat@/example.js */
 ()=>{
 console.log('Variables can also be called in the 
 code section by wrapping them in @ symbols')
 }
-/*_ <!3=^^1 + 1 + 1!> example@3@.js _*/
+/*_ <!3=^^1 + 1 + 1!> example@3@.js */
 ()=>{
 console.log('variables will be evaluated if they start with ^^')
 }
@@ -87,7 +87,7 @@ Pagitter comes with the store plugin which allows you to create stores
 
 *home/yourProject/pagitter.js*
 ````
-/*_ <!pagitterStoresCreate=storeName!> example.js _*/
+/*_ <!pagitterStoresCreate=storeName!> example.js */
 ()=>{
 console.log('this creates a store file in the .pagitter folder in the root directory')
 console.log('starting from when the store is created
@@ -115,11 +115,11 @@ personView.js
 
 *home/yourProject/pagitter.js*
 ````
-/*_ <!baseName=user!> @baseName@Controller.js _*/
+/*_ <!baseName=user!> @baseName@Controller.js */
 ...
-/*_  @baseName@Model.js _*/
+/*_  @baseName@Model.js */
 ...
-/*_  @baseName@View.js _*/
+/*_  @baseName@View.js */
 ...
 ````
 ````
@@ -128,11 +128,11 @@ $pgt --d
 --->Deletes userController.js, userModel.js, userView.js
 *home/yourProject/pagitter.js*
 ````
-/*_ <!baseName=person!> @baseName@Controller.js _*/
+/*_ <!baseName=person!> @baseName@Controller.js */
 ...
-/*_  @baseName@Model.js _*/
+/*_  @baseName@Model.js */
 ...
-/*_  @baseName@View.js _*/
+/*_  @baseName@View.js */
 ...
 ````
 --->Writes personController.js, personModel.js, personView.js
