@@ -101,11 +101,12 @@ var initialPluginPromise = exports.initialPluginPromise = _bluebird2.default.met
 });
 
 function splitCode(file) {
-	return (0, _immutable.List)(file.match(/\/\*_(.|\s)+?\*\//g));
+	return (0, _immutable.List)(file.match(/\/\*_(?:.|\s)+?\*\//g));
 }
 
 function splitContent(file) {
-	var contents = (0, _immutable.List)(file.split(/\/\*_(?:.|\s)+?\*\//g));
+
+	var contents = (0, _immutable.List)(file.split(/\/\*_(?:.|\s)+?\*\//));
 	return contents.shift();
 }
 
@@ -116,14 +117,12 @@ var rawVariableRegExp = exports.rawVariableRegExp = /\<\!(.|\s)+?\!\>/ig;
 
 var updateGlobalVariables = exports.updateGlobalVariables = _bluebird2.default.method(function (state) {
 	var rawVariables = getRawVariables(state.get('code'));
-	console.log('rawVariables', rawVariables);
 	return state.set('globalVariables', rawVariables.reduce(function (updatingGlobalVariables, rawVariable) {
 		return updatingGlobalVariables.merge(convertRawVariableToObject(rawVariable, updatingGlobalVariables));
 	}, state.get('globalVariables')));
 });
 
 function convertRawVariableToObject(rawVariable, globalVariables) {
-	console.log('rawVariable', rawVariable);
 	var cleanRawVariable = rawVariable.slice(2, -2);
 	var rawVariableKey = getRawVariableKey(cleanRawVariable);
 	var rawVariableValue = getRawVariableValue(cleanRawVariable);
@@ -159,18 +158,20 @@ var allButFilenameRegExp = new RegExp(_StartRegExp.source + '|' + _EndRegExp.sou
 
 var transformContent = exports.transformContent = _bluebird2.default.method(function (state) {
 	if (state.get('globalVariables').toList().size > 0) {
-		return state.set('content', transform(state.get('content'), state.get('globalVariables')));
+		return state.set('content', trimContent(transform(state.get('content'), state.get('globalVariables'))));
 	}
-	return state;
+	return state.update('content', function (content) {
+		return trimContent(content);
+	});
 });
 var removeTagsRegExp = /^\<\!|\!\>|^\@|\@$/g;
 
 function trimContent(content) {
-	return content.replace(/(\\n)*$|^(\\n)*/g, '');
+	return content.replace(/(\n)*$|^(\n)*/g, '');
 }
 
 function transform(content, globalVariables) {
-	return trimContent(content).replace(transformRegExp(globalVariables), function (matched) {
+	return content.replace(transformRegExp(globalVariables), function (matched) {
 		var globalVariable = matched.replace(removeTagsRegExp, '');
 		return globalVariables.get(globalVariable);
 	});

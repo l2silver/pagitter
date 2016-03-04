@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.writeFilePromise = undefined;
 exports.location = location;
-exports.basename = basename;
 exports.generateFolders = generateFolders;
 
 var _immutable = require('immutable');
@@ -28,15 +27,14 @@ var mkdirp = (0, _bluebird.promisify)(_mkdirp2.default);
 var writeFile = (0, _bluebird.promisify)(_fs2.default.writeFile);
 
 exports.default = function (state) {
-	if (state.get('filename')) {
-		return location(state).then(function (fullLocation) {
-			return writeFilePromise(fullLocation, state);
-		});
-	} else {
-		return _bluebird2.default.method(function (state) {
-			return state;
-		});
-	}
+	return _bluebird2.default.method(function (state) {
+		if (state.get('filename')) {
+			return location(state).then(function (fullLocation) {
+				return writeFilePromise(fullLocation, state);
+			});
+		}
+		return state;
+	})(state);
 };
 
 var writeFilePromise = exports.writeFilePromise = _bluebird2.default.method(function (fullLocation, state) {
@@ -47,18 +45,10 @@ var writeFilePromise = exports.writeFilePromise = _bluebird2.default.method(func
 
 function location(state) {
 	var filename = state.get('filename');
-	var fullFilename = process.cwd() + '/' + basename(state.get('globalVariables')) + filename;
+	var fullFilename = process.cwd() + '/' + filename;
 	return generateFolders(fullFilename).then(function () {
 		return fullFilename;
 	});
-}
-
-function basename(globalVariables) {
-	if (globalVariables.has('base')) {
-		return globalVariables.get('base') + '/';
-	} else {
-		return '';
-	}
 }
 
 function generateFolders(filename) {

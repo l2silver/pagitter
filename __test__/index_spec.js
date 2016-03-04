@@ -94,8 +94,8 @@ describe('index', ()=>{
 			code
 			})
 		);
-		updatedGlobalVariablesState.then((state)=>{
-			expect(state.get('globalVariables')).to.equal(Map({example: 'variable'}));
+		return updatedGlobalVariablesState.then((state)=>{
+			expect(state.get('globalVariables')).to.equal(Map({example: '\nvariable'}));
 			return done();
 		});
 		
@@ -159,13 +159,13 @@ describe('index', ()=>{
 	
 	it('pluginStream', (done)=>{
 		const state = Map({
-				filename: 'example.js'
+				filename: 'example/example.js'
 				, content: 'hello'
 				, globalVariables: Map({
 					base: 'example'
 				})
 			})
-		const plugins = List([require("./../dist/pagitter-write").default]);
+		const plugins = List([require("./../lib/pagitter-write").default]);
 		const generatePluginFunction = generatePluginFunctions(plugins)
 		generatePluginFunction(state)
 		.then(()=>{
@@ -204,6 +204,16 @@ describe('index', ()=>{
 			run('./__test__/pagitterTest3.js', pluginList)
 			.then(()=>{
 				return readFile('example/example6.js', 'utf8')
+			})
+			.then((content)=>{
+				expect(content).to.equal('function(){\n\treturn \'spagetti\';\n}');
+				return done();
+			});
+		});
+		it('creates files without globalVariable', (done)=>{
+			run('./__test__/pagitterTest4.js', pluginList)
+			.then(()=>{
+				return readFile('example/example7.js', 'utf8')
 			})
 			.then((content)=>{
 				expect(content).to.equal('function(){\n\treturn \'spagetti\';\n}');

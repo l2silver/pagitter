@@ -56,8 +56,7 @@ describe('pagitter-store', ()=>{
 				})
 				.then((content)=>{
 					expect(content).to.equal('/*_ <!base=example!> example.js */\n\nfunction(){\n\treturn "delicious"\n}\n\n');
-					rimraf.sync('example');
-				
+					return rimraf.sync('example');
 				})
 				.then(()=>{
 					return deleteFile('pagitter.js')
