@@ -2,6 +2,8 @@
 
 The lightweight file generator designed to facilitate application development.
 
+[![Build Status](https://travis-ci.org/l2silver/pagitter.svg?branch=master)](https://travis-ci.org/l2silver/pagitter)
+
 ### Examples
 
 *home/yourProject/pagitter.js*
